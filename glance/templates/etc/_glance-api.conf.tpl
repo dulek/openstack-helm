@@ -46,7 +46,7 @@ driver = noop
 
 [glance_store]
 filesystem_store_datadir = /var/lib/glance/images/
-{{- if .Values.development.enabled }}
+{{- if or (.Values.development.enabled) (not .Values.ceph.enabled) }}
 stores = file, http
 default_store = file
 {{- else }}
