@@ -84,12 +84,13 @@ ceph:
   cinder_keyring: null
 
 backends:
-  enabled:
-  - rbd1
+  # list all of your backend configs here
   rbd1:
-    secret: null
-    user: "admin"
-    pool: "volumes"
+    volume_driver: "cinder.volume.drivers.rbd.RBDDriver"
+    volume_backend_name: "rbd1"
+    rbd_secret_uuid: null
+    rbd_user: "admin"
+    rbd_pool: "volumes"
 
 glance:
   version: 2

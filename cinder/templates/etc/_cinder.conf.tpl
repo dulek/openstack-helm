@@ -29,7 +29,7 @@ api_paste_config = /etc/cinder/api-paste.ini
 glance_api_servers = {{ tuple "image" "internal" "api" . | include "helm-toolkit.keystone_endpoint_uri_lookup" }}
 glance_api_version = {{ .Values.glance.version }}
 
-enabled_backends = {{  include "helm-toolkit.joinListWithComma" .Values.backends.enabled }}
+enabled_backends = {{  include "helm-toolkit.joinMapKeysWithComma" .Values.backends}}
 
 auth_strategy = keystone
 os_region_name = {{ .Values.keystone.cinder_region_name }}
@@ -63,18 +63,46 @@ rabbit_password = {{ .Values.messaging.password }}
 rabbit_ha_queues = true
 rabbit_hosts = {{ .Values.messaging.hosts }}
 
-[rbd1]
-volume_driver = cinder.volume.drivers.rbd.RBDDriver
-rbd_pool = {{ .Values.backends.rbd1.pool }}
+{{ range $name, $options := .Values.backends }}
+[{{ $name }}]
+{{- if not $options.volume_backend_name }}
+volume_backend_name = {{ $name }}
+{{- end }}
+{{- if not $options.volume_driver }}
+volume_driver = "cinder.volume.driver.rbd.RBDDriver"
+{{- end }}
+
+{{- if eq $options.volume_driver "cinder.volume.drivers.rbd.RBDDriver" }}
+{{- if not $options.rbd_ceph_conf }}
 rbd_ceph_conf = /etc/ceph/ceph.conf
+{{- end }}
+{{- if not $options.rbd_flatten_volume_from_snapshot }}
 rbd_flatten_volume_from_snapshot = false
+{{- end }}
+{{- if not $options.rbd_max_clone_depth }}
 rbd_max_clone_depth = 5
+{{- end }}
+{{- if not $options.rbd_store_chunk_size }}
 rbd_store_chunk_size = 4
+{{- end }}
+{{- if not $options.rados_connect_timeout }}
 rados_connect_timeout = -1
-{{- if .Values.backends.rbd1.secret }}
-rbd_user = {{ .Values.backends.rbd1.user }}
+{{- end }}
+{{- if not $options.report_discard_supported }}
+report_discard_supported = True
+{{- end }}
+
+{{- if $options.rbd_secret_uuid }}
+rbd_user = {{ $options.rbd_user }}
+rbd_secret_uuid = {{- $options.rbd_secret_uuid -}}
 {{- else }}
 rbd_secret_uuid = {{- include "secrets/ceph-client-key" . -}}
 {{- end }}
-rbd_secret_uuid = {{ .Values.backends.rbd1.secret }}
-report_discard_supported = True
+{{- end }}
+
+{{- range $key, $value := $options }}
+{{- if $value }}
+{{ $key }} = {{ $value }}
+{{- end }}
+{{- end }}
+{{ end }}

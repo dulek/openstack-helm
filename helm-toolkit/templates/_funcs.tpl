@@ -16,6 +16,10 @@
 {{ range $k, $v := . }}{{ if $k }},{{ end }}{{ $v }}{{ end }}
 {{- end -}}
 
+{{- define "helm-toolkit.joinMapKeysWithComma" -}}
+{{ range $k, $v := . }}{{ $k }},{{ end }}
+{{- end -}}
+
 {{- define "helm-toolkit.template" -}}
 {{- $name := index . 0 -}}
 {{- $context := index . 1 -}}
