@@ -18,7 +18,7 @@ metadata:
   name: cinder-api
 spec:
   ports:
-    - port: {{ .Values.network.api.port }}
+    - port: {{ .Values.conf.cinder.default.cinder.osapi_volume_listen_port }}
     {{ if .Values.network.api.node_port.enabled }}
       nodePort: {{ .Values.network.api.node_port.port }}
     {{ end }}
